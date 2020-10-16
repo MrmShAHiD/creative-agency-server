@@ -22,7 +22,9 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
     const servicesCollection = client.db("creativeAgency").collection("services");
     const feedbacksCollection = client.db("creativeAgency").collection("feedbacks");
+    const ordersCollection = client.db("creativeAgency").collection("orders");
   
+    // services 
     app.get('/services', (req, res) => {
         servicesCollection.find({})
         .toArray((err, documents) => {
@@ -30,11 +32,39 @@ client.connect(err => {
         });
     })
 
+    // feedbacks
     app.get('/feedbacks', (req, res) => {
         feedbacksCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents);
             })
+    });
+
+    app.post('/addfeedback', (req, res) => {
+        const newFeedback = req.body;
+        feedbacksCollection.insertOne(newFeedback).then((result) => {
+            res.send(result.insertedCount > 0);
+        });
+    });
+
+    // Orders 
+    app.post('/addOrder', (req, res) => {
+        const newOrder = req.body;
+        ordersCollection.insertOne(newOrder).then((result) => {
+            res.send(result.insertedCount > 0);
+        });
+    });
+
+    app.get('/serviceList', (req, res) => {
+        ordersCollection.find({email: req.query.email}).toArray((err, documents) => {
+            res.send(documents);
+        });
+    });
+
+    app.get('/admin/serviceList', (req, res) => {
+        ordersCollection.find({}).toArray((err, documents) => {
+            res.send(documents);
+        });
     });
 
 });
